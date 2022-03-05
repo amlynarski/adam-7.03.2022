@@ -42,11 +42,6 @@ export const OrderBookSocketContextProvider: FC = ({ children }) => {
     // todo
   }, []);
 
-  useEffect(() => {
-    console.log("-----------------------");
-    console.log("-- ", asksBidsData);
-  }, [asksBidsData]);
-
   const onMessage = useCallback((messageEvent: MessageEvent) => {
     const msg: OrderBookMsg = JSON.parse(messageEvent.data);
 
@@ -56,12 +51,12 @@ export const OrderBookSocketContextProvider: FC = ({ children }) => {
 
     if (!dataInitialized.current) {
       dataInitialized.current = true;
-      console.log("initialize", msg);
+      console.log("+++", msg);
       setAsksBidsData(transformMsgToData(msg));
     } else {
+      setAsksBidsData(transformMsgToData(asksBidsData, msg));
+      console.log("---- m", dataInitialized.current, msg);
     }
-
-    // console.log("--- msg", msg);
   }, []);
 
   const send = useCallback(
