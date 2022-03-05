@@ -8,15 +8,27 @@ import styles from "./Row.styles";
 
 interface Props {
   rowData: InfoData;
+  totalFill: number;
+  type: "ask" | "bid";
 }
 
-const Row: FC<Props> = ({ rowData }) => {
+const Row: FC<Props> = ({ rowData, totalFill, type }) => {
   const [price, size, total] = rowData;
+
   return (
-    <View style={styles.row}>
-      <Cell value={price} />
-      <Cell value={size} />
-      <Cell value={total} />
+    <View style={styles.container}>
+      <View
+        style={{
+          ...styles.totalFill,
+          ...styles[type],
+          width: `${totalFill * 100}%`,
+        }}
+      />
+      <View style={styles.row}>
+        <Cell value={price} />
+        <Cell value={size} />
+        <Cell value={total} />
+      </View>
     </View>
   );
 };
