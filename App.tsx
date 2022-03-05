@@ -18,10 +18,6 @@ export default function App() {
   return (
     <OrderBookSocketContextProvider>
       <OrderBookScreen />
-      <View style={styles.container} testID="App-container">
-        <Text>Open up App.js to start working on your app!</Text>
-        <StatusBar />
-      </View>
     </OrderBookSocketContextProvider>
   );
 }

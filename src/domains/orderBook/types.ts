@@ -5,3 +5,7 @@ export type OrderBookMsg = {
   bids: InfoData[];
   event?: string;
 };
+
+export const PRICE = 0;
+export const SIZE = 1;
+export const TOTAL = 2;

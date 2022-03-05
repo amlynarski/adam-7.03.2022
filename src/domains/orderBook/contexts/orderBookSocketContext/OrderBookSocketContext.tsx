@@ -1,23 +1,27 @@
-import {
-  createContext,
-  FC,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { createContext, FC, useCallback, useRef, useState } from "react";
 
 import { WS_SUBSCRIBE_MSG, WS_UNSUBCRRIBE_MSG, WS_URL } from "./consts";
-import { InfoData, OrderBookMsg } from "../../types";
-import { transformMsgToData } from "../../utils/utils";
+import { OrderBookMsg } from "../../types";
+import { sortAsc, sortDesc, transformMsgToData } from "../../utils/utils";
 
 const emptyFn = () => undefined;
 
-export const OrderBookSocketContext = createContext({
+interface Props {
+  connect: () => void;
+  send: (data: string) => void;
+  close: () => void;
+  asksBidsData: OrderBookMsg;
+}
+
+export const OrderBookSocketContext = createContext<Props>({
   connect: emptyFn,
   send: (_data: string) => undefined,
   close: emptyFn,
-  setSubscribeMsg: (_msg) => undefined, // todo rename to toggle and implement logic
+  // setSubscribeMsg: (_msg) => undefined, // todo rename to toggle and implement logic
+  asksBidsData: {
+    asks: [],
+    bids: [],
+  },
 });
 
 export const OrderBookSocketContextProvider: FC = ({ children }) => {
@@ -35,7 +39,7 @@ export const OrderBookSocketContextProvider: FC = ({ children }) => {
   const onOpen = useCallback(() => {
     ws.current.send(subscribeMsg);
 
-    setTimeout(() => close(), 1000);
+    setTimeout(() => close(), 10000);
   }, [subscribeMsg]);
 
   const onError = useCallback(() => {
@@ -51,11 +55,9 @@ export const OrderBookSocketContextProvider: FC = ({ children }) => {
 
     if (!dataInitialized.current) {
       dataInitialized.current = true;
-      console.log("+++", msg);
       setAsksBidsData(transformMsgToData(msg));
     } else {
-      setAsksBidsData(transformMsgToData(asksBidsData, msg));
-      console.log("---- m", dataInitialized.current, msg);
+      setAsksBidsData((prevState) => transformMsgToData(prevState, msg));
     }
   }, []);
 
@@ -91,7 +93,8 @@ export const OrderBookSocketContextProvider: FC = ({ children }) => {
         connect,
         send,
         close,
-        setSubscribeMsg,
+        // setSubscribeMsg,
+        asksBidsData,
       }}
     >
       {children}
@@ -99,108 +102,3 @@ export const OrderBookSocketContextProvider: FC = ({ children }) => {
   );
 };
 export const OrderBookSocketContextConsumer = OrderBookSocketContext.Consumer;
-
-/**
- * asks = sell, total = sum of lower
- * "asks": Array [
- *     Array [
- *       39001,
- *       1040,
- *     ],
- *     Array [
- *       39001.5,
- *       5029,
- *     ],
- *     Array [
- *       39003,
- *       0,
- *     ],
- *     Array [
- *       39005.5,
- *       28798,
- *     ],
- *     Array [
- *       39007,
- *       4370,
- *     ],
- *     Array [
- *       39023,
- *       20000,
- *     ],
- *     Array [
- *       39025.5,
- *       0,
- *     ],
- *     Array [
- *       39038.5,
- *       0,
- *     ],
- *     Array [
- *       39039,
- *       0,
- *     ],
- *     Array [
- *       39039.5,
- *       0,
- *     ],
- *     Array [
- *       39041.5,
- *       399999,
- *     ],
- *     Array [
- *       39042,
- *       1031005,
- *     ],
- *     Array [
- *       39050.5,
- *       0,
- *     ],
- *     Array [
- *       39052,
- *       59270,
- *     ],
- *     Array [
- *       39053.5,
- *       250000,
- *     ],
- *     Array [
- *       39182,
- *       123728,
- *     ],
- *   ],
- *
- *   bid = buy, total = sum of higher
- *   "bids": Array [
- *     Array [
- *       38802,
- *       117075,
- *     ],
- *     Array [
- *       38924.5,
- *       57550,
- *     ],
- *     Array [
- *       38935.5,
- *       20000,
- *     ],
- *     Array [
- *       38936.5,
- *       2996,
- *     ],
- *     Array [
- *       38964.5,
- *       14238,
- *     ],
- *     Array [
- *       38965,
- *       10000,
- *     ],
- *     Array [
- *       38965.5,
- *       30611,
- *     ],
- *   ],
- *   "feed": "book_ui_1",
- *   "product_id": "PI_XBTUSD",
- *
- * */
