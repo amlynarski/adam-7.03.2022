@@ -25,7 +25,7 @@ const Row: FC<Props> = ({ rowData, totalFill, type }) => {
         }}
       />
       <View style={styles.row}>
-        <Cell value={price} />
+        <Cell type={type} value={price} withDigits />
         <Cell value={size} />
         <Cell value={total} />
       </View>

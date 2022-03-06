@@ -1,11 +1,10 @@
 {
   "expo": {
-    "name": "less-test",
-    "slug": "less-test",
+    "name": "orderBook",
+    "slug": "orderBook",
     "version": "1.0.0",
     "assetBundlePatterns": [
       "**/*"
     ]
   },
-  "name": "less-test"
 }

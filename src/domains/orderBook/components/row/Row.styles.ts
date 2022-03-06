@@ -14,10 +14,10 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   ask: {
-    backgroundColor: "rgba(255,0,0,0.5)",
+    backgroundColor: "rgba(255,0,0,0.2)",
   },
   bid: {
-    backgroundColor: "rgba(0,255,0,0.5)",
+    backgroundColor: "rgba(0,255,0,0.2)",
   },
 });
 

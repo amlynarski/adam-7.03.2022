@@ -8,7 +8,7 @@ import { sortDesc } from "../utils";
 import { useAppState } from "../../../hooks";
 import { Modal } from "../../../components";
 
-const MAX_ELEMENTS = 20;
+const MAX_ELEMENTS = 15;
 
 // todo think about dedicated screens / props for different crypto
 export const OrderBookScreen = () => {
@@ -98,7 +98,6 @@ export const OrderBookScreen = () => {
   }, [connect]);
 
   // todo skeleton
-  // todo bottom and top paddings from library
   return (
     <View>
       <Text>Order Book</Text>

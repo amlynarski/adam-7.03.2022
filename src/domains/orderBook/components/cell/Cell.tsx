@@ -1,14 +1,29 @@
-import { Text } from "react-native";
+import { Text, View } from "react-native";
 import { FC, memo } from "react";
 
 interface Props {
   value: number;
+  type?: "ask" | "bid";
+  withDigits?: boolean;
 }
 
-const Cell: FC<Props> = ({ value }) => {
-  // todo add props for colors
+import styles from "./Cell.styles";
 
-  return <Text>{value.toLocaleString()}</Text>;
+const Cell: FC<Props> = ({ value, type, withDigits }) => {
+  const localeOptions = withDigits ? { minimumFractionDigits: 2 } : {};
+
+  /**
+   * author comment:
+   * value.toLocaleString('en') is done as on designs but passing `en` is IMO wrong decision,
+   * because we should follow device / user preferences and store it somewhere
+   * */
+  return (
+    <View style={styles.container}>
+      <Text style={{ ...styles.text, ...styles[type] }}>
+        {value.toLocaleString("en", localeOptions)}
+      </Text>
+    </View>
+  );
 };
 
 export default memo(Cell);
