@@ -4,7 +4,7 @@ import { Button, Text, View } from "react-native";
 import { OrderBookSocketContext } from "../contexts/orderBookSocketContext";
 import Row from "../components/row";
 import { PRICE, TOTAL } from "../types";
-import { sortDesc } from "../utils/utils";
+import { sortDesc } from "../utils";
 
 const MAX_ELEMENTS = 20;
 

@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { throttle } from "lodash";
 
 import { getUnsubscribeMsg, WS_SUBSCRIBE_MSG, WS_URL } from "./consts";
 import { OrderBookMsg } from "../../types";
@@ -32,6 +33,8 @@ export const OrderBookSocketContext = createContext<Props>({
   },
 });
 
+const THROTTLE_TIME = 200;
+
 export const OrderBookSocketContextProvider: FC = ({ children }) => {
   const ws = useRef<WebSocket>();
   const dataInitialized =
@@ -54,21 +57,35 @@ export const OrderBookSocketContextProvider: FC = ({ children }) => {
     // todo
   }, []);
 
-  const onMessage = useCallback((messageEvent: MessageEvent) => {
-    const msg: OrderBookMsg = JSON.parse(messageEvent.data);
-
-    if (!!msg.event) {
-      return;
-    }
-
-    if (!dataInitialized.current) {
-      console.log("---initialization");
-      dataInitialized.current = true;
-      setAsksBidsData(transformMsgToData(msg));
-    } else {
-      setAsksBidsData((prevState) => transformMsgToData(prevState, msg));
-    }
+  const mergeNewAsksBidsDataWithOldValues = useCallback((msg) => {
+    console.log("inside callback");
+    setAsksBidsData((prevState) => transformMsgToData(prevState, msg));
   }, []);
+
+  const throttleSetMsgState = useCallback(
+    throttle((msg) => mergeNewAsksBidsDataWithOldValues(msg), THROTTLE_TIME),
+    [mergeNewAsksBidsDataWithOldValues]
+  );
+
+  const onMessage = useCallback(
+    (messageEvent: MessageEvent) => {
+      const msg: OrderBookMsg = JSON.parse(messageEvent.data);
+
+      if (!!msg.event) {
+        return;
+      }
+
+      if (!dataInitialized.current) {
+        console.log("---initialization");
+        dataInitialized.current = true;
+        setAsksBidsData(transformMsgToData(msg));
+      } else {
+        throttleSetMsgState(msg);
+        // setAsksBidsData((prevState) => transformMsgToData(prevState, msg));
+      }
+    },
+    [throttleSetMsgState]
+  );
 
   const send = useCallback(
     (data: string) => {
