@@ -41,16 +41,19 @@ export const OrderBookSocketContext = createContext<Props>({
 });
 
 const THROTTLE_TIME = 500;
+const initialState = {
+  asks: [],
+  bids: [],
+};
 
 export const OrderBookSocketContextProvider: FC = ({ children }) => {
   const ws = useRef<WebSocket>();
   const [subscribeMsg, setSubscribeMsg] = useState<WS_SUBSCRIBE_MSG>(
     WS_SUBSCRIBE_MSG.PI_XBTUSD
   );
-  const [asksBidsData, setAsksBidsData] = useState<OrderBookMsg>({
-    asks: [],
-    bids: [],
-  });
+  const currentDataState = useRef<OrderBookMsg>(initialState);
+
+  const [asksBidsData, setAsksBidsData] = useState<OrderBookMsg>(initialState);
   const [isConnectionOpen, setIsConnectionOpen] = useState<boolean>(false);
 
   const onError = useCallback(() => {
@@ -62,15 +65,11 @@ export const OrderBookSocketContextProvider: FC = ({ children }) => {
     console.log("- onClose");
   }, []);
 
-  const mergeNewAsksBidsDataWithOldValues = useCallback((msg) => {
-    setAsksBidsData((prevState) => transformMsgToData(prevState, msg));
-  }, []);
-
   // linter disabled: expect arrow function. It is ok to keep it without unnecessary nesting
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const throttleSetMsgState: (msg: OrderBookMsg) => void = useCallback(
-    throttle((msg) => mergeNewAsksBidsDataWithOldValues(msg), THROTTLE_TIME),
-    [mergeNewAsksBidsDataWithOldValues]
+    throttle(() => setAsksBidsData(currentDataState.current), THROTTLE_TIME),
+    []
   );
 
   const onMessage = useCallback(
@@ -84,8 +83,13 @@ export const OrderBookSocketContextProvider: FC = ({ children }) => {
       const isSnapshot = msg.feed.includes(SNAPSHOT);
 
       if (isSnapshot) {
-        setAsksBidsData(transformMsgToData(msg));
+        currentDataState.current = transformMsgToData(msg);
+        setAsksBidsData(currentDataState.current);
       } else {
+        currentDataState.current = transformMsgToData(
+          currentDataState.current,
+          msg
+        );
         throttleSetMsgState(msg);
       }
     },

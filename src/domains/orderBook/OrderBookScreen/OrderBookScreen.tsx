@@ -54,12 +54,12 @@ export const OrderBookScreen = () => {
 
   const bidsLength = useMemo(
     () => Math.min(MAX_ELEMENTS, sortedBids.length) || 1,
-    [MAX_ELEMENTS, sortedBids]
+    [sortedBids]
   );
 
   const asksLength = useMemo(
     () => Math.min(MAX_ELEMENTS, sortedAsks.length) || 1,
-    [MAX_ELEMENTS, sortedAsks]
+    [sortedAsks]
   );
 
   const maxTotal = useMemo(
@@ -73,7 +73,7 @@ export const OrderBookScreen = () => {
   const spread = useMemo(
     () =>
       sortedAsks[asksLength - 1] && sortedBids[0]
-        ? sortedBids[0][PRICE] - sortedAsks[asksLength - 1][PRICE]
+        ? sortedAsks[asksLength - 1][PRICE] - sortedBids[0][PRICE]
         : 0,
     [sortedBids, sortedAsks, asksLength]
   );
@@ -93,7 +93,7 @@ export const OrderBookScreen = () => {
         type="ask"
       />
     ));
-  }, [sortedAsks]);
+  }, [sortedAsks, getTotalFillPercentage]);
 
   // highest bids most important
   const renderBids = useCallback(() => {
@@ -105,7 +105,7 @@ export const OrderBookScreen = () => {
         type="bid"
       />
     ));
-  }, [sortedBids]);
+  }, [sortedBids, getTotalFillPercentage]);
 
   const handleModalClose = useCallback(() => {
     setIsConnectModalVisible(false);
