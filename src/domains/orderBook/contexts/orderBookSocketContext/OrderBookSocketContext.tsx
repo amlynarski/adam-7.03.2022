@@ -40,7 +40,7 @@ export const OrderBookSocketContext = createContext<Props>({
   isConnectionOpen: false,
 });
 
-const THROTTLE_TIME = 1000;
+const THROTTLE_TIME = 500;
 
 export const OrderBookSocketContextProvider: FC = ({ children }) => {
   const ws = useRef<WebSocket>();
@@ -97,6 +97,7 @@ export const OrderBookSocketContextProvider: FC = ({ children }) => {
   }, []);
 
   const onOpen = useCallback(() => {
+    console.log("onopen");
     setIsConnectionOpen(true);
   }, []);
 

@@ -4,6 +4,10 @@ import { AppState, AppStateStatus } from "react-native";
 // add new status to follow background changes
 type AppStateStatusExtended = AppStateStatus | "re-active";
 
+/**
+ * copy of https://github.com/react-native-community/hooks/blob/master/src/useAppState.ts
+ * with custom extension
+ * */
 export const useAppState = () => {
   const currentState = useRef(AppState.currentState);
   const [appState, setAppState] = useState<AppStateStatusExtended>(
@@ -12,7 +16,6 @@ export const useAppState = () => {
 
   useEffect(() => {
     function onChange(newState: AppStateStatus) {
-      console.log("--- newAppState from subscribe", newState);
       if (
         currentState.current.match(/inactive|background/) &&
         newState === "active"

@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useMemo } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { Button, Text, View } from "react-native";
 
 import { OrderBookSocketContext } from "../contexts/orderBookSocketContext";
@@ -6,13 +6,17 @@ import Row from "../components/row";
 import { PRICE, TOTAL } from "../types";
 import { sortDesc } from "../utils";
 import { useAppState } from "../../../hooks";
+import { Modal } from "../../../components";
 
 const MAX_ELEMENTS = 20;
 
 // todo think about dedicated screens / props for different crypto
 export const OrderBookScreen = () => {
-  const { connect, asksBidsData, toggleMsg, close } =
-    useContext(OrderBookSocketContext);
+  const { connect, asksBidsData, toggleMsg, close } = useContext(
+    OrderBookSocketContext
+  );
+
+  const [isConnectModalVisible, setIsConnectModalVisible] = useState(false);
 
   const appState = useAppState();
 
@@ -25,11 +29,12 @@ export const OrderBookScreen = () => {
 
   useEffect(() => {
     if (appState === "re-active") {
-      console.log("show modal");
+      setIsConnectModalVisible(true);
     }
   }, [appState]);
 
   useEffect(() => {
+    console.log("connect");
     connect();
   }, [connect]);
 
@@ -87,6 +92,11 @@ export const OrderBookScreen = () => {
     ));
   }, [sortedBids]);
 
+  const handleModalClose = useCallback(() => {
+    setIsConnectModalVisible(false);
+    connect();
+  }, [connect]);
+
   // todo skeleton
   // todo bottom and top paddings from library
   return (
@@ -97,6 +107,13 @@ export const OrderBookScreen = () => {
       {renderBids()}
       {/*todo disable when action*/}
       <Button title="toggle" onPress={toggleMsg} />
+      <Modal
+        show={isConnectModalVisible}
+        message="To prevent unnecessary usage of your transfer data are not collected
+            during app inactivity."
+        buttonTitle="Ok, re-connect!"
+        onButtonClick={handleModalClose}
+      />
     </View>
   );
 };
