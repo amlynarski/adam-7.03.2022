@@ -17,6 +17,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: "gray",
   },
+  toggleButton: {
+    marginTop: 20,
+  },
 });
 
 export default styles;

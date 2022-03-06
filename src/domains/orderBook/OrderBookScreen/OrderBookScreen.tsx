@@ -11,9 +11,8 @@ import { Button, Modal } from "../../../components";
 import styles from "./OrderBookScreen.styles";
 import HeaderRow from "../components/headerRow";
 
-const MAX_ELEMENTS = 15;
+const MAX_ELEMENTS = 14;
 
-// todo think about dedicated screens / props for different crypto
 export const OrderBookScreen = () => {
   const { connect, asksBidsData, toggleMsg, close } = useContext(
     OrderBookSocketContext
@@ -79,6 +78,14 @@ export const OrderBookScreen = () => {
     [sortedBids, sortedAsks, asksLength]
   );
 
+  const spreadPercentage = useMemo(
+    () =>
+      sortedBids[0] && sortedBids[0][PRICE] !== 0
+        ? (spread / sortedBids[0][PRICE]) * 100
+        : 0,
+    [spread, sortedBids]
+  );
+
   const getTotalFillPercentage = useCallback(
     (rowTotal: number) => (maxTotal ? rowTotal / maxTotal : 0),
     [maxTotal]
@@ -113,7 +120,6 @@ export const OrderBookScreen = () => {
     connect();
   }, [connect]);
 
-  // todo skeleton
   return (
     <View>
       <View style={styles.headerContainer}>
@@ -127,11 +133,19 @@ export const OrderBookScreen = () => {
           {spread.toLocaleString("en", {
             minimumFractionDigits: 1,
             maximumFractionDigits: 1,
-          })}
+          })}{" "}
+          {`(${spreadPercentage.toLocaleString("en", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}%)`}
         </Text>
       </View>
       {renderBids()}
-      <Button title="Toggle Feed" onPress={toggleMsg} />
+      <Button
+        title="Toggle Feed"
+        onPress={toggleMsg}
+        style={styles.toggleButton}
+      />
       <Modal
         show={isConnectModalVisible}
         message="To prevent unnecessary usage of your transfer data are not collected

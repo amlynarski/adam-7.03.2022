@@ -1,5 +1,3 @@
-// todo rename
-
 import { InfoData, OrderBookMsg, PRICE, SIZE } from "../types";
 
 export const sortAsc = (a: InfoData, b: InfoData) => a[PRICE] - b[PRICE];
