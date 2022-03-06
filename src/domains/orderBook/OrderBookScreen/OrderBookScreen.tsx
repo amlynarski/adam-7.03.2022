@@ -10,13 +10,19 @@ const MAX_ELEMENTS = 20;
 
 // todo think about dedicated screens / props for different crypto
 export const OrderBookScreen = () => {
-  const { connect, asksBidsData, toggleMsg } = useContext(
-    OrderBookSocketContext
-  );
+  const { connect, asksBidsData, toggleMsg, close, isConnectionOpen } =
+    useContext(OrderBookSocketContext);
+
+  // useEffect(() => {
+  //   connect();
+  // }, [connect]);
 
   useEffect(() => {
-    connect();
-  }, [connect]);
+    if (!isConnectionOpen) {
+      console.log("reconnect");
+      setTimeout(() => connect(), 1000);
+    }
+  }, [isConnectionOpen]);
 
   useEffect(() => {}, [asksBidsData]);
 

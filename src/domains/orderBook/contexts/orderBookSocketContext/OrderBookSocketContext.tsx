@@ -20,6 +20,7 @@ interface Props {
   close: () => void;
   asksBidsData: OrderBookMsg;
   toggleMsg: () => void; // could be changed to setSubscribeMsg in future
+  isConnectionOpen: boolean;
 }
 
 export const OrderBookSocketContext = createContext<Props>({
@@ -31,31 +32,44 @@ export const OrderBookSocketContext = createContext<Props>({
     asks: [],
     bids: [],
   },
+  isConnectionOpen: false,
 });
 
-const THROTTLE_TIME = 200;
+const THROTTLE_TIME = 1000;
 
 export const OrderBookSocketContextProvider: FC = ({ children }) => {
   const ws = useRef<WebSocket>();
-  const dataInitialized =
+  const isDataInitialized =
     useRef<boolean>(false); /** value used for setting snapshot */
   const [subscribeMsg, setSubscribeMsg] = useState<WS_SUBSCRIBE_MSG>(
     WS_SUBSCRIBE_MSG.PI_XBTUSD
   );
   const [asksBidsData, setAsksBidsData] = useState<OrderBookMsg>({
-    asks: [], // todo think if not undefined
+    asks: [],
     bids: [],
   });
+  const [isConnectionOpen, setIsConnectionOpen] = useState<boolean>(false);
 
   const onOpen = useCallback(() => {
+    console.log("- onOpen");
+    setIsConnectionOpen(true);
     ws.current.send(subscribeMsg);
-
-    setTimeout(() => close(), 10000);
   }, [subscribeMsg]);
 
   const onError = useCallback(() => {
     // todo
   }, []);
+
+  const onClose = useCallback(() => {
+    setIsConnectionOpen(false);
+    console.log("- onClose");
+  }, []);
+
+  useEffect(() => {
+    if (!isConnectionOpen) {
+      isDataInitialized.current = false;
+    }
+  }, [isConnectionOpen]);
 
   const mergeNewAsksBidsDataWithOldValues = useCallback((msg) => {
     setAsksBidsData((prevState) => transformMsgToData(prevState, msg));
@@ -74,31 +88,26 @@ export const OrderBookSocketContextProvider: FC = ({ children }) => {
         return;
       }
 
-      if (!dataInitialized.current) {
+      if (!isDataInitialized.current) {
         console.log("---initialization");
-        dataInitialized.current = true;
+        isDataInitialized.current = true;
         setAsksBidsData(transformMsgToData(msg));
       } else {
-        throttleSetMsgState(msg);
-        // setAsksBidsData((prevState) => transformMsgToData(prevState, msg));
+        throttleSetMsgState(msg); // todo check
       }
     },
-    [throttleSetMsgState]
+    [throttleSetMsgState, isConnectionOpen]
   );
 
-  const send = useCallback(
-    (data: string) => {
-      ws.current?.send(data);
-    },
-    [ws]
-  );
+  const send = useCallback((data: string) => {
+    ws.current?.send(data);
+  }, []);
 
   const close = useCallback(() => {
     console.log("close");
     const unsubscribeMsg = getUnsubscribeMsg(subscribeMsg);
     send(unsubscribeMsg);
     ws.current.close();
-    dataInitialized.current = false;
   }, [send, subscribeMsg, ws]);
 
   const connect = useCallback(() => {
@@ -107,17 +116,11 @@ export const OrderBookSocketContextProvider: FC = ({ children }) => {
     ws.current.onopen = onOpen;
     ws.current.onerror = onError;
     ws.current.onmessage = onMessage;
+    ws.current.onclose = onClose;
   }, [onOpen, onError, onMessage]);
 
-  /** subscribedMsg was changed and connection was closed, but we need to reconnect */
-  useEffect(() => {
-    if (!dataInitialized.current) {
-      connect();
-    }
-  }, [subscribeMsg, connect]);
-
-  // todo move it outside from context and implement inside dedicated view
   const toggleMsg = useCallback(() => {
+    /** todo can be moved outside from context and implement inside dedicated view to support more pairs */
     close();
 
     setSubscribeMsg((prevState) => {
@@ -137,6 +140,7 @@ export const OrderBookSocketContextProvider: FC = ({ children }) => {
         close,
         toggleMsg,
         asksBidsData,
+        isConnectionOpen,
       }}
     >
       {children}
