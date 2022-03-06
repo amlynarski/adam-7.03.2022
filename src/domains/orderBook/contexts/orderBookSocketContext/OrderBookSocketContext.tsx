@@ -10,7 +10,9 @@ import { throttle } from "../../../../utils";
 
 import {
   getUnsubscribeMsg,
+  initialState,
   SNAPSHOT,
+  THROTTLE_TIME,
   WS_SUBSCRIBE_MSG,
   WS_URL,
 } from "./consts";
@@ -39,12 +41,6 @@ export const OrderBookSocketContext = createContext<Props>({
   },
   isConnectionOpen: false,
 });
-
-const THROTTLE_TIME = 200;
-const initialState = {
-  asks: [],
-  bids: [],
-};
 
 export const OrderBookSocketContextProvider: FC = ({ children }) => {
   const ws = useRef<WebSocket>();

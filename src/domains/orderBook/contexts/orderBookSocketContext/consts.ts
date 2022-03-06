@@ -24,3 +24,9 @@ export const getUnsubscribeMsg = (
 };
 
 export const SNAPSHOT = "snapshot";
+
+export const THROTTLE_TIME = 200;
+export const initialState = {
+  asks: [],
+  bids: [],
+};
