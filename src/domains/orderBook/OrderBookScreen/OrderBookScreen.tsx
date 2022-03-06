@@ -1,14 +1,15 @@
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { Button, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
 import { OrderBookSocketContext } from "../contexts/orderBookSocketContext";
 import Row from "../components/row";
 import { PRICE, TOTAL } from "../types";
 import { sortDesc } from "../utils";
 import { useAppState } from "../../../hooks";
-import { Modal } from "../../../components";
+import { Button, Modal } from "../../../components";
 
 import styles from "./OrderBookScreen.styles";
+import HeaderRow from "../components/headerRow";
 
 const MAX_ELEMENTS = 15;
 
@@ -115,7 +116,10 @@ export const OrderBookScreen = () => {
   // todo skeleton
   return (
     <View>
-      <Text>Order Book</Text>
+      <View style={styles.headerContainer}>
+        <Text style={styles.header}>Order Book</Text>
+      </View>
+      <HeaderRow />
       {renderAsks()}
       <View style={styles.spreadContainer}>
         <Text style={styles.spread}>
@@ -127,8 +131,7 @@ export const OrderBookScreen = () => {
         </Text>
       </View>
       {renderBids()}
-      {/*todo disable when action*/}
-      <Button title="toggle" onPress={toggleMsg} />
+      <Button title="Toggle Feed" onPress={toggleMsg} />
       <Modal
         show={isConnectModalVisible}
         message="To prevent unnecessary usage of your transfer data are not collected

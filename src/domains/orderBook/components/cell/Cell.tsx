@@ -2,8 +2,8 @@ import { Text, View } from "react-native";
 import { FC, memo } from "react";
 
 interface Props {
-  value: number;
-  type?: "ask" | "bid";
+  value: number | string;
+  type?: "ask" | "bid" | "header";
   withDigits?: boolean;
 }
 

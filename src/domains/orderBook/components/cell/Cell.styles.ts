@@ -16,6 +16,9 @@ const styles = StyleSheet.create({
   ask: {
     color: "red",
   },
+  header: {
+    color: "gray",
+  },
 });
 
 export default styles;

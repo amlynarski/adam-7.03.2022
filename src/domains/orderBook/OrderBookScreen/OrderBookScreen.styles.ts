@@ -9,6 +9,14 @@ const styles = StyleSheet.create({
   spread: {
     color: "gray",
   },
+  header: {
+    color: "white",
+  },
+  headerContainer: {
+    padding: 8,
+    borderBottomWidth: 1,
+    borderColor: "gray",
+  },
 });
 
 export default styles;
