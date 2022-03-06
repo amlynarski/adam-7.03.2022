@@ -26,6 +26,14 @@ App optimized for iPhone 13 (tested on Simulator)
 ## Additional notes
 * it was a really nice task - Thank you & Have a great day!
 
+https://user-images.githubusercontent.com/18632066/156947089-6620b777-8dd4-4d21-a306-078d2c6b137a.mov
+
 <img width="478" alt="Zrzut ekranu 2022-03-6 o 23 05 49" src="https://user-images.githubusercontent.com/18632066/156946846-168d24b1-dcee-48ba-a0a6-f4bb2efa1619.png">
 <img width="478" alt="Zrzut ekranu 2022-03-6 o 23 05 54" src="https://user-images.githubusercontent.com/18632066/156946849-47977de9-cfee-4079-8ce1-691d5515cc54.png">
 <img width="478" alt="Zrzut ekranu 2022-03-6 o 23 06 00" src="https://user-images.githubusercontent.com/18632066/156946850-db345be6-ffcd-4659-a052-020b0fc9af0a.png">
+
+
+
+
+
+
