@@ -22,3 +22,5 @@ export const getUnsubscribeMsg = (
       return WS_UNSUBSCRIBE_MSG.PI_XBTUSD;
   }
 };
+
+export const SNAPSHOT = "snapshot";

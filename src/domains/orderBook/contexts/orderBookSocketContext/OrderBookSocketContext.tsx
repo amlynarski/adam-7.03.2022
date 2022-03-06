@@ -8,7 +8,12 @@ import {
 } from "react";
 import { throttle } from "../../../../utils";
 
-import { getUnsubscribeMsg, WS_SUBSCRIBE_MSG, WS_URL } from "./consts";
+import {
+  getUnsubscribeMsg,
+  SNAPSHOT,
+  WS_SUBSCRIBE_MSG,
+  WS_URL,
+} from "./consts";
 import { OrderBookMsg } from "../../types";
 import { transformMsgToData } from "../../utils";
 
@@ -39,8 +44,6 @@ const THROTTLE_TIME = 1000;
 
 export const OrderBookSocketContextProvider: FC = ({ children }) => {
   const ws = useRef<WebSocket>();
-  const isDataInitialized =
-    useRef<boolean>(false); /** value used for setting snapshot */
   const [subscribeMsg, setSubscribeMsg] = useState<WS_SUBSCRIBE_MSG>(
     WS_SUBSCRIBE_MSG.PI_XBTUSD
   );
@@ -49,12 +52,6 @@ export const OrderBookSocketContextProvider: FC = ({ children }) => {
     bids: [],
   });
   const [isConnectionOpen, setIsConnectionOpen] = useState<boolean>(false);
-
-  const onOpen = useCallback(() => {
-    console.log("- onOpen");
-    setIsConnectionOpen(true);
-    ws.current.send(subscribeMsg);
-  }, [subscribeMsg]);
 
   const onError = useCallback(() => {
     // todo
@@ -65,17 +62,13 @@ export const OrderBookSocketContextProvider: FC = ({ children }) => {
     console.log("- onClose");
   }, []);
 
-  useEffect(() => {
-    if (!isConnectionOpen) {
-      isDataInitialized.current = false;
-    }
-  }, [isConnectionOpen]);
-
   const mergeNewAsksBidsDataWithOldValues = useCallback((msg) => {
     setAsksBidsData((prevState) => transformMsgToData(prevState, msg));
   }, []);
 
-  const throttleSetMsgState = useCallback(
+  // linter disabled: expect arrow function. It is ok to keep it without unnecessary nesting
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const throttleSetMsgState: (msg: OrderBookMsg) => void = useCallback(
     throttle((msg) => mergeNewAsksBidsDataWithOldValues(msg), THROTTLE_TIME),
     [mergeNewAsksBidsDataWithOldValues]
   );
@@ -88,23 +81,32 @@ export const OrderBookSocketContextProvider: FC = ({ children }) => {
         return;
       }
 
-      if (!isDataInitialized.current) {
-        console.log("---initialization");
-        isDataInitialized.current = true;
+      const isSnapshot = msg.feed.includes(SNAPSHOT);
+
+      if (isSnapshot) {
         setAsksBidsData(transformMsgToData(msg));
       } else {
-        throttleSetMsgState(msg); // todo check
+        throttleSetMsgState(msg);
       }
     },
-    [throttleSetMsgState, isConnectionOpen]
+    [throttleSetMsgState]
   );
 
   const send = useCallback((data: string) => {
     ws.current?.send(data);
   }, []);
 
+  const onOpen = useCallback(() => {
+    setIsConnectionOpen(true);
+  }, []);
+
+  useEffect(() => {
+    if (isConnectionOpen) {
+      send(subscribeMsg);
+    }
+  }, [isConnectionOpen, subscribeMsg, send]);
+
   const close = useCallback(() => {
-    console.log("close");
     const unsubscribeMsg = getUnsubscribeMsg(subscribeMsg);
     send(unsubscribeMsg);
     ws.current.close();
@@ -117,11 +119,11 @@ export const OrderBookSocketContextProvider: FC = ({ children }) => {
     ws.current.onerror = onError;
     ws.current.onmessage = onMessage;
     ws.current.onclose = onClose;
-  }, [onOpen, onError, onMessage]);
+  }, [onOpen, onError, onMessage, onClose]);
 
   const toggleMsg = useCallback(() => {
-    /** todo can be moved outside from context and implement inside dedicated view to support more pairs */
-    close();
+    const unsubscribeMsg = getUnsubscribeMsg(subscribeMsg);
+    send(unsubscribeMsg);
 
     setSubscribeMsg((prevState) => {
       if (prevState === WS_SUBSCRIBE_MSG.PI_ETHUSD) {
@@ -130,7 +132,7 @@ export const OrderBookSocketContextProvider: FC = ({ children }) => {
         return WS_SUBSCRIBE_MSG.PI_ETHUSD;
       }
     });
-  }, [close]);
+  }, [send, subscribeMsg]);
 
   return (
     <OrderBookSocketContext.Provider

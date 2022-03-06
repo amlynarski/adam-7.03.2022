@@ -5,24 +5,33 @@ import { OrderBookSocketContext } from "../contexts/orderBookSocketContext";
 import Row from "../components/row";
 import { PRICE, TOTAL } from "../types";
 import { sortDesc } from "../utils";
+import { useAppState } from "../../../hooks";
 
 const MAX_ELEMENTS = 20;
 
 // todo think about dedicated screens / props for different crypto
 export const OrderBookScreen = () => {
-  const { connect, asksBidsData, toggleMsg, close, isConnectionOpen } =
+  const { connect, asksBidsData, toggleMsg, close } =
     useContext(OrderBookSocketContext);
 
-  // useEffect(() => {
-  //   connect();
-  // }, [connect]);
+  const appState = useAppState();
 
   useEffect(() => {
-    if (!isConnectionOpen) {
-      console.log("reconnect");
-      setTimeout(() => connect(), 1000);
+    if (appState.match(/inactive|background/)) {
+      console.log("-appstate stop");
+      close();
     }
-  }, [isConnectionOpen]);
+  }, [appState, close]);
+
+  useEffect(() => {
+    if (appState === "re-active") {
+      console.log("show modal");
+    }
+  }, [appState]);
+
+  useEffect(() => {
+    connect();
+  }, [connect]);
 
   useEffect(() => {}, [asksBidsData]);
 
@@ -46,7 +55,7 @@ export const OrderBookScreen = () => {
       sortedAsks[0] && sortedBids[bidsLength - 1]
         ? Math.max(sortedAsks[0][TOTAL], sortedBids[bidsLength - 1][TOTAL])
         : 0,
-    [sortedAsks, sortedBids]
+    [sortedAsks, sortedBids, bidsLength]
   );
 
   const getTotalFillPercentage = useCallback(
