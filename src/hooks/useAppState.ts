@@ -20,7 +20,6 @@ export const useAppState = () => {
         currentState.current.match(/inactive|background/) &&
         newState === "active"
       ) {
-        console.log("set reactive");
         setAppState("re-active");
       } else {
         setAppState(newState);

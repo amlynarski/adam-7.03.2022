@@ -40,7 +40,7 @@ export const OrderBookSocketContext = createContext<Props>({
   isConnectionOpen: false,
 });
 
-const THROTTLE_TIME = 500;
+const THROTTLE_TIME = 200;
 const initialState = {
   asks: [],
   bids: [],
@@ -57,12 +57,11 @@ export const OrderBookSocketContextProvider: FC = ({ children }) => {
   const [isConnectionOpen, setIsConnectionOpen] = useState<boolean>(false);
 
   const onError = useCallback(() => {
-    // todo
+    // todo implement :)
   }, []);
 
   const onClose = useCallback(() => {
     setIsConnectionOpen(false);
-    console.log("- onClose");
   }, []);
 
   // linter disabled: expect arrow function. It is ok to keep it without unnecessary nesting
@@ -101,7 +100,6 @@ export const OrderBookSocketContextProvider: FC = ({ children }) => {
   }, []);
 
   const onOpen = useCallback(() => {
-    console.log("onopen");
     setIsConnectionOpen(true);
   }, []);
 
@@ -112,9 +110,10 @@ export const OrderBookSocketContextProvider: FC = ({ children }) => {
   }, [isConnectionOpen, subscribeMsg, send]);
 
   const close = useCallback(() => {
+    setIsConnectionOpen(false);
     const unsubscribeMsg = getUnsubscribeMsg(subscribeMsg);
     send(unsubscribeMsg);
-    ws.current.close();
+    ws?.current?.close();
   }, [send, subscribeMsg, ws]);
 
   const connect = useCallback(() => {

@@ -1,5 +1,4 @@
 export const throttle = (callback: Function, limit: number) => {
-  // todo remove lodash or keep this
   let waiting = false;
 
   return function () {

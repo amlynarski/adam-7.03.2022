@@ -11,7 +11,7 @@ import { Button, Modal } from "../../../components";
 import styles from "./OrderBookScreen.styles";
 import HeaderRow from "../components/headerRow";
 
-const MAX_ELEMENTS = 14;
+const MAX_ELEMENTS = 13;
 
 export const OrderBookScreen = () => {
   const { connect, asksBidsData, toggleMsg, close } = useContext(
@@ -24,7 +24,6 @@ export const OrderBookScreen = () => {
 
   useEffect(() => {
     if (appState.match(/inactive|background/)) {
-      console.log("-appstate stop");
       close();
     }
   }, [appState, close]);
@@ -36,11 +35,8 @@ export const OrderBookScreen = () => {
   }, [appState]);
 
   useEffect(() => {
-    console.log("connect");
     connect();
   }, [connect]);
-
-  useEffect(() => {}, [asksBidsData]);
 
   const sortedAsks = useMemo(
     () => asksBidsData.asks.sort(sortDesc).slice(-MAX_ELEMENTS),
