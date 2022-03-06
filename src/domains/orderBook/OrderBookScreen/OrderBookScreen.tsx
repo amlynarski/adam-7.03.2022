@@ -4,12 +4,15 @@ import { Button, Text, View } from "react-native";
 import { OrderBookSocketContext } from "../contexts/orderBookSocketContext";
 import Row from "../components/row";
 import { PRICE, TOTAL } from "../types";
-import { sortAsc, sortDesc } from "../utils/utils";
+import { sortDesc } from "../utils/utils";
 
 const MAX_ELEMENTS = 20;
 
+// todo think about dedicated screens / props for different crypto
 export const OrderBookScreen = () => {
-  const { connect, asksBidsData } = useContext(OrderBookSocketContext);
+  const { connect, asksBidsData, toggleMsg } = useContext(
+    OrderBookSocketContext
+  );
 
   useEffect(() => {
     connect();
@@ -27,8 +30,16 @@ export const OrderBookScreen = () => {
     [asksBidsData.bids]
   );
 
+  const bidsLength = useMemo(
+    () => Math.min(MAX_ELEMENTS, sortedBids.length) || 1,
+    [MAX_ELEMENTS, sortedBids]
+  );
+
   const maxTotal = useMemo(
-    () => Math.max(sortedAsks[0][TOTAL], sortedBids[MAX_ELEMENTS - 1][TOTAL]),
+    () =>
+      sortedAsks[0] && sortedBids[bidsLength - 1]
+        ? Math.max(sortedAsks[0][TOTAL], sortedBids[bidsLength - 1][TOTAL])
+        : 0,
     [sortedAsks, sortedBids]
   );
 
@@ -61,11 +72,7 @@ export const OrderBookScreen = () => {
     ));
   }, [sortedBids]);
 
-  const handleClick = () => {
-    console.log("asks", asksBidsData.asks.sort(sortAsc)[0]);
-    console.log("bids", asksBidsData.bids.sort(sortDesc)[0]);
-  };
-
+  // todo skeleton
   // todo bottom and top paddings from library
   return (
     <View>
@@ -73,7 +80,8 @@ export const OrderBookScreen = () => {
       {renderAsks()}
       <Text>----</Text>
       {renderBids()}
-      <Button title={"check"} onPress={handleClick} />
+      {/*todo disable when action*/}
+      <Button title="toggle" onPress={toggleMsg} />
     </View>
   );
 };

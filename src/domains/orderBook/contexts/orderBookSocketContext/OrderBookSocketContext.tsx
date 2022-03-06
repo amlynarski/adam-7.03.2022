@@ -1,8 +1,15 @@
-import { createContext, FC, useCallback, useRef, useState } from "react";
+import {
+  createContext,
+  FC,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
-import { WS_SUBSCRIBE_MSG, WS_UNSUBCRRIBE_MSG, WS_URL } from "./consts";
+import { getUnsubscribeMsg, WS_SUBSCRIBE_MSG, WS_URL } from "./consts";
 import { OrderBookMsg } from "../../types";
-import { sortAsc, sortDesc, transformMsgToData } from "../../utils/utils";
+import { transformMsgToData } from "../../utils";
 
 const emptyFn = () => undefined;
 
@@ -11,13 +18,14 @@ interface Props {
   send: (data: string) => void;
   close: () => void;
   asksBidsData: OrderBookMsg;
+  toggleMsg: () => void; // could be changed to setSubscribeMsg in future
 }
 
 export const OrderBookSocketContext = createContext<Props>({
   connect: emptyFn,
   send: (_data: string) => undefined,
   close: emptyFn,
-  // setSubscribeMsg: (_msg) => undefined, // todo rename to toggle and implement logic
+  toggleMsg: () => undefined,
   asksBidsData: {
     asks: [],
     bids: [],
@@ -54,6 +62,7 @@ export const OrderBookSocketContextProvider: FC = ({ children }) => {
     }
 
     if (!dataInitialized.current) {
+      console.log("---initialization");
       dataInitialized.current = true;
       setAsksBidsData(transformMsgToData(msg));
     } else {
@@ -70,10 +79,7 @@ export const OrderBookSocketContextProvider: FC = ({ children }) => {
 
   const close = useCallback(() => {
     console.log("close");
-    const unsubscribeMsg =
-      subscribeMsg === WS_SUBSCRIBE_MSG.PI_XBTUSD
-        ? WS_UNSUBCRRIBE_MSG.PI_XBTUSD
-        : WS_UNSUBCRRIBE_MSG.PI_ETHUSD; // todo think if handle with one variable or keep this condition
+    const unsubscribeMsg = getUnsubscribeMsg(subscribeMsg);
     send(unsubscribeMsg);
     ws.current.close();
     dataInitialized.current = false;
@@ -87,13 +93,33 @@ export const OrderBookSocketContextProvider: FC = ({ children }) => {
     ws.current.onmessage = onMessage;
   }, [onOpen, onError, onMessage]);
 
+  /** subscribedMsg was changed and connection was closed, but we need to reconnect */
+  useEffect(() => {
+    if (!dataInitialized.current) {
+      connect();
+    }
+  }, [subscribeMsg]);
+
+  // todo move it outside from context and implement inside dedicated view
+  const toggleMsg = useCallback(() => {
+    close();
+
+    setSubscribeMsg((prevState) => {
+      if (prevState === WS_SUBSCRIBE_MSG.PI_ETHUSD) {
+        return WS_SUBSCRIBE_MSG.PI_XBTUSD;
+      } else {
+        return WS_SUBSCRIBE_MSG.PI_ETHUSD;
+      }
+    });
+  }, [close]);
+
   return (
     <OrderBookSocketContext.Provider
       value={{
         connect,
         send,
         close,
-        // setSubscribeMsg,
+        toggleMsg,
         asksBidsData,
       }}
     >
