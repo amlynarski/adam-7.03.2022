@@ -6,7 +6,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { throttle } from "lodash";
+import { throttle } from "../../../../utils";
 
 import { getUnsubscribeMsg, WS_SUBSCRIBE_MSG, WS_URL } from "./consts";
 import { OrderBookMsg } from "../../types";
@@ -58,7 +58,6 @@ export const OrderBookSocketContextProvider: FC = ({ children }) => {
   }, []);
 
   const mergeNewAsksBidsDataWithOldValues = useCallback((msg) => {
-    console.log("inside callback");
     setAsksBidsData((prevState) => transformMsgToData(prevState, msg));
   }, []);
 
@@ -115,7 +114,7 @@ export const OrderBookSocketContextProvider: FC = ({ children }) => {
     if (!dataInitialized.current) {
       connect();
     }
-  }, [subscribeMsg]);
+  }, [subscribeMsg, connect]);
 
   // todo move it outside from context and implement inside dedicated view
   const toggleMsg = useCallback(() => {
