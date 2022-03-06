@@ -8,6 +8,8 @@ import { sortDesc } from "../utils";
 import { useAppState } from "../../../hooks";
 import { Modal } from "../../../components";
 
+import styles from "./OrderBookScreen.styles";
+
 const MAX_ELEMENTS = 15;
 
 // todo think about dedicated screens / props for different crypto
@@ -55,12 +57,25 @@ export const OrderBookScreen = () => {
     [MAX_ELEMENTS, sortedBids]
   );
 
+  const asksLength = useMemo(
+    () => Math.min(MAX_ELEMENTS, sortedAsks.length) || 1,
+    [MAX_ELEMENTS, sortedAsks]
+  );
+
   const maxTotal = useMemo(
     () =>
       sortedAsks[0] && sortedBids[bidsLength - 1]
         ? Math.max(sortedAsks[0][TOTAL], sortedBids[bidsLength - 1][TOTAL])
         : 0,
     [sortedAsks, sortedBids, bidsLength]
+  );
+
+  const spread = useMemo(
+    () =>
+      sortedAsks[asksLength - 1] && sortedBids[0]
+        ? sortedBids[0][PRICE] - sortedAsks[asksLength - 1][PRICE]
+        : 0,
+    [sortedBids, sortedAsks, asksLength]
   );
 
   const getTotalFillPercentage = useCallback(
@@ -102,7 +117,15 @@ export const OrderBookScreen = () => {
     <View>
       <Text>Order Book</Text>
       {renderAsks()}
-      <Text>----</Text>
+      <View style={styles.spreadContainer}>
+        <Text style={styles.spread}>
+          Spread:{" "}
+          {spread.toLocaleString("en", {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1,
+          })}
+        </Text>
+      </View>
       {renderBids()}
       {/*todo disable when action*/}
       <Button title="toggle" onPress={toggleMsg} />
